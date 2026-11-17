@@ -1,0 +1,70 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+# Evita ejecuciones simultáneas para el mismo issue (p. ej. ediciones seguidas)
+concurrency:
+  group: issue-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    # Ignora ediciones hechas por bots (evita bucles)
+    if: github.event.sender.type != 'Bot'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Analizar issue con Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Eres un asistente de triage para el repositorio ${{ github.repository }},
+            un Tetris en JavaScript vanilla + HTML5 Canvas (index.html, style.css, game.js).
+            Lee CLAUDE.md para entender la arquitectura antes de analizar.
+
+            Issue a analizar: #${{ github.event.issue.number }}
+            Evento: ${{ github.event.action }}
+
+            Pasos:
+            1. Lee el issue con `gh issue view ${{ github.event.issue.number }} --comments`.
+            2. Revisa el código relevante (principalmente game.js) para ubicar las
+               funciones/líneas implicadas.
+            3. Lista los labels existentes con `gh label list` y elige los apropiados
+               (tipo: bug, enhancement, documentation, question; y área si aplica).
+               Usa SOLO labels existentes; si ninguno encaja, crea uno con `gh label create`.
+               Si el evento es "edited", reemplaza los labels que ya no apliquen
+               (`gh issue edit --add-label` / `--remove-label`).
+            4. Publica un diagnóstico en ESPAÑOL como comentario del issue. Si ya existe
+               un comentario tuyo que empiece con "## 🤖 Diagnóstico de Claude", actualízalo
+               en lugar de crear uno nuevo. Usa siempre:
+               `gh issue comment ${{ github.event.issue.number }} --edit-last --create-if-none --body "<texto>"`
+               (crea el comentario si aún no existe y lo edita si ya existe).
+
+            Formato del comentario:
+
+            ## 🤖 Diagnóstico de Claude
+            **Tipo:** <bug | mejora | pregunta | documentación>
+            **Prioridad sugerida:** <alta | media | baja> — <motivo breve>
+            **Resumen:** <1-2 frases>
+            **Causa probable / contexto:** <análisis técnico con referencias `archivo:línea`>
+            **Archivos y funciones afectadas:** <lista>
+            **Propuesta de solución:** <pasos concretos para implementarla>
+            **Riesgos / casos borde:** <qué verificar jugando en el navegador>
+            **Información faltante:** <preguntas al autor, o "Ninguna">
+
+            Reglas: no modifiques código ni cierres el issue; solo labels y el comentario.
+            Si el issue no tiene información suficiente, añade el label `needs-info`
+            (créalo si no existe) y pide los detalles en "Información faltante".
+          claude_args: |
+            --allowed-tools "Read,Grep,Glob,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh label create:*)"
