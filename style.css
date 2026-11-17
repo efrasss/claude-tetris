@@ -15,6 +15,28 @@ body {
   user-select: none;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  padding-left: 8px;
+  color: #7aa2f7;
+}
+
+.title span:nth-child(1) { color: #f7768e; }
+.title span:nth-child(2) { color: #ff9e64; }
+.title span:nth-child(3) { color: #e0af68; }
+.title span:nth-child(4) { color: #9ece6a; }
+.title span:nth-child(5) { color: #7aa2f7; }
+.title span:nth-child(6) { color: #bb9af7; }
+
 .wrapper {
   position: relative;
 }
