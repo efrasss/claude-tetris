@@ -63,6 +63,12 @@ jobs:
             **Riesgos / casos borde:** <qué verificar jugando en el navegador>
             **Información faltante:** <preguntas al autor, o "Ninguna">
 
+            Formato: el comentario DEBE estar escrito en Markdown compatible con GitHub
+            (GFM): usa encabezados, **negritas**, listas con `-` o `1.`, `código en línea`,
+            bloques de código con triple acento grave y lenguaje (```js), y referencias
+            `archivo:línea`. Asegúrate de que cada campo quede en su propia línea o lista
+            (deja una línea en blanco entre campos) para que se renderice correctamente.
+
             Reglas: no modifiques código ni cierres el issue; solo labels y el comentario.
             Si el issue no tiene información suficiente, añade el label `needs-info`
             (créalo si no existe) y pide los detalles en "Información faltante".
